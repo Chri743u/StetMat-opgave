@@ -1,0 +1,35 @@
+---
+title: "StatMet eksamensopgave, kladde"
+author: "Morten Tulstrup"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(moderndive)
+library(infer)
+```
+
+***
+
+# Opgave 2:
+Prædiktionsintervallerne bestemmes for $n = 40, 80, 120$. For kendt $p = 0.05$ er
+\[
+\text{se} = \sqrt{\frac{0.05(1-0.05)}{n}} =
+\begin{cases}
+    0.06324555 & n = 40 \\
+    0.04472136 & n = 80 \\
+    0.03651484 & n = 120 \\
+\end{cases}
+\]
+
+Baseret på den centrale grænseværdisætning er $\delta_{\text{gauss}} = 1.96$, jvf Tabel 2.1 i NRHAT (i nedenstående udregninger bruges dog det mere præcise tal opnået ved kommandoen qnorm(0.975) i R). Prædiktionsintervaller udregnet som $0.2 \pm \delta_{\text{gauss}}\times \text{se}$ bliver således:
+\[
+\begin{matrix}
+   [0.037, 0.362] & \text{for} \; n = 40 \\
+   [0.085, 0.315] & \text{for} \; n = 80 \\
+   [0.106, 0.294] & \text{for} \; n = 120 
+\end{matrix}
+\]
+Det vil altså sige, at for en bivirkning med en sand sandsynlighed på 5\% forventer vi, at det observerede $\hat{p}$ falder indenfor ovenstående intervaller med en sandsynlighed på 95\%. Hvis vi f.eks. betragter tilfældet $n = 80$ bemærker vi, at prædiktionsintervallet er meget bredere end $(0.01, 0.1)$  
