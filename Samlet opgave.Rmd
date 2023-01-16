@@ -61,7 +61,13 @@ Som er et meget mere præcist tal, dvs.at koncentrationsuligheden er korrekt men
 # Opgave 4
 # Opgave 5
 # Opgave 6
-Vi betragter den lineære model for maxLA $\text{maxLA}_i = \mu_1(\text{race}_i) + \epsilon_i$ ($\text{race}_i$ er racen for hund $i$, $i = 1,...,n$), hvor $\mu_1(\text{race}) = \beta_0 + \beta_1\cdot 1(\text{race}=\text{Petit Basset}) + \beta_2 \cdot 1(\text{race} = \text{Whippet})$ og det tilhørende underrum $L_1 \subseteq \mathbb{R}^n$ med $\text{dim}(L_1) = 3$. Dvs. modellens designmatrix $\mathbf{X}$, som frembringer $L_1$ er en $n\times3$ matrix med søjler: 
+Vi betragter den lineære model for maxLA: 
+
+\[
+\text{maxLA}_i = \mu_1(\text{race}_i) + \epsilon_i
+\]
+
+Hvor $\text{race}_i$ er racen for hund $i$, $i = 1,...,n$, og $\mu_1(\text{race}) = \beta_0 + \beta_1\cdot 1(\text{race}=\text{Petit Basset}) + \beta_2 \cdot 1(\text{race} = \text{Whippet})$ og det tilhørende underrum $L_1 \subseteq \mathbb{R}^n$ med $\text{dim}(L_1) = 3$. Dvs. modellens designmatrix $\mathbf{X}$, som frembringer $L_1$ er en $n\times3$ matrix med søjler: 
 \[
 \Bigg(\mathbf{1} \;\;\; 1(\text{race}_i = \text{Petit Basset}) \;\;\; 1(\text{race}_i = \text{Whippet} )  \Bigg)
 \]

@@ -2,6 +2,8 @@ library(tidyverse)
 library(moderndive)
 library(infer)
 library(gridExtra)
+library(ggExtra)
+
 hunde <- read.table("../hunde.txt", sep = "\t", header = T)
 
 hunde %>% ggplot(aes(x = race, y = maxLA)) + 
@@ -21,7 +23,8 @@ hunde %>% group_by(race) %>%
             max_maxLA = max(maxLA))
 
 
-lm_0 <- lm(maxLA ~ 1, data = hunde)
+trehunde <- hunde %>% filter(race %in% c("Border_Terrier", "Petit_Basset", "Whippet"))
+lm_0 <- lm(maxLA ~ 1, data = trehunde)
 X0 <- model.matrix(lm_0)
 n <- nrow(X0)
 
@@ -31,22 +34,19 @@ my_boot <- tibble(residuals = residuals(lm_0)) %>%
   rep_sample_n(size = n, replace = TRUE, reps = B) %>%
   mutate(y = fitted(lm_0) + residuals)
 
-lm_fit <- lm(maxLA ~ race, data = hunde)
+lm_fit <- lm(maxLA ~ race, data = trehunde)
 X <- model.matrix(lm_fit)
 
 F_test <- function(lm_null, lm_full) {
   p <- lm_full$rank
   q <- lm_null$rank
-  
-  lm_full$df.residual * sum((lm_full$fitted.values -
-                               lm_null$fitted.values)^2)/(sum(lm_full$residuals^2) *
-                                                            (p - q))
+  lm_full$df.residual * sum((lm_full$fitted.values - lm_null$fitted.values)^2)/(sum(lm_full$residuals^2) * (p - q))
 }
 
 my_res <- my_boot %>%
   summarize(F = F_test(lm.fit(X0, y), lm.fit(X, y)))
 
-F_obs <- F_test(lm.fit(X0, hunde$maxLA), lm.fit(X, hunde$maxLA))
+F_obs <- F_test(lm.fit(X0, trehunde$maxLA), lm.fit(X, trehunde$maxLA))
 p_value <- sum(my_res$F > F_obs) / B
 p_value
 
@@ -55,7 +55,31 @@ ggplot(data = my_res) +
                  color = "white", fill = "steelblue", bins = 100) + 
   labs(x = "F") +
   theme_bw() +
-  geom_vline(xintercept = F_obs, color = "red")
-#+ 
+  geom_vline(xintercept = F_obs, color = "red") #+ 
   stat_function(fun = df, args = list(df1 = 25 - 16, df2 = 50 - 25), 
                 geom = "area", fill = "pink", color = "blue", alpha = 0.25)
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
