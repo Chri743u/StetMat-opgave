@@ -33,3 +33,57 @@ Baseret på den centrale grænseværdisætning er $\delta_{\text{gauss}} = 1.96$
 \end{matrix}
 \]
 Det vil altså sige, at for en bivirkning med en sand sandsynlighed på 5\% forventer vi, at det observerede $\hat{p}$ falder indenfor ovenstående intervaller med en sandsynlighed på 95\%. Hvis vi f.eks. betragter tilfældet $n = 80$ bemærker vi, at prædiktionsintervallet er meget bredere end $(0.01, 0.1)$  
+
+# Opgave 3:
+
+Benytter NRHAT Definition 2.1.10 med:
+\[
+\hat{p} = \frac{862}{1332719} = 0.000646798
+\]
+Og 
+\[
+\hat{se} = \sqrt{\frac{\hat{p}(1-\hat{p})}{1332719}} = 2.20229e-05
+\]
+Baseret på den Centrale Grænseværdisætning og $\alpha = 0.01$ er
+\[
+\delta_{\text{gauss}} = 2.58
+\]
+
+```{r opg3, include=FALSE}
+# knitr::opts_chunk$set(echo = FALSE)
+phat <-  862/1332719
+sehat <-  sqrt(phat*(1-phat)/1332719)
+n <- 1332719
+delta_gauss <- qnorm(0.995)
+cilo <- phat - delta_gauss * sehat
+ciup <- phat + delta_gauss * sehat
+print(cbind(cilo, ciup))
+```
+
+$99%$-konfidensintervallet for $\hat{p}$ er da $[0.00059,0.00070]$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
