@@ -1,7 +1,8 @@
 ---
 title: "StatMet eksamensopgave, kladde"
 author: "Morten Tulstrup"
-output: pdf_document
+output:
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -12,6 +13,44 @@ library(infer)
 ```
 
 ***
+# Opgave 1
+Vi tager udgangspunkt i Theorem 2.1.5 (koncentrationsulighed baseret på Chebychevs ulighed):
+\[
+P\Bigg(|\hat{p}-p| > \delta\sqrt{\frac{p(1-p)}{n} }\Bigg) \leq \frac{1}{\delta^2} 
+\]
+
+Indsætter $p = 0.2$ og $n = 80$:
+\[
+P\Bigg(|\hat{p}-0.2| > \delta\sqrt{\frac{0.2(1-0.2)}{80} }\Bigg) =
+P\Bigg(|\hat{p}-0.2| > \delta\sqrt{0.002}\Bigg)
+\leq \frac{1}{\delta^2} 
+\]
+
+Vi vælger $\delta$ så 
+\[
+\delta \sqrt{0.002} = 0.1 \Rightarrow
+\delta = \frac{0.1}{\sqrt{0.002}} = 2.236
+\]
+
+Dermed er:
+\[
+P\Big(|\hat{p}-0.2| > 0.1\Big) \leq \frac{1}{2.236^2} = 0.2 \Rightarrow 
+\]
+\[
+P(\hat{p} \in [0.1, 0.3]) \leq 0.2
+\]
+Eftersom $0 \leq \hat{p} \leq 1$ og $P$ er et sandsynlighedsmål er det ensbetydende med:
+\[
+P(\hat{p} \in [0.1, 0.3]^C) = P(\hat{p} \in [0,0.1) \cup (0.3, 1]) = P(\hat{p} \in [0.1)) + P(\hat{p} \in (0.3,1]))> 0.8 
+\]
+
+Vi kan altså bruge koncentrationsuligheden til at sige, at sandsynligheden for at observere bivirkningen hos 10-30% af de vaccinerede er større end 0.8. Vi kan derimod ikke bruge koncentrationsuligheden til at sige, hvordan sandsynligheden fordeler sig mellem tilfældende hvor $\hat{p} < 0.1$ vs. $\hat{p} > 0.3$, så den egentlige sandsynlighed for at observere $\hat{p} > 0.1$ er altså større end 0.8.
+
+Den faktiske sandsynlighed ud fra binomialfordelingen er 0.987:
+```{r opg1, include=TRUE}
+1-pbinom(8, 80, 0.2)
+```
+Som er et meget mere præcist tal, dvs.at koncentrationsuligheden er korrekt men meget upræcis. 
 
 # Opgave 2:
 Prædiktionsintervallerne bestemmes for $n = 40, 80, 120$. For kendt $p = 0.05$ er
@@ -61,6 +100,7 @@ print(cbind(cilo, ciup))
 ```
 
 $99%$-konfidensintervallet for $\hat{p}$ er da $[0.00059,0.00070]$
+
 
 
 

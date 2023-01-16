@@ -1,7 +1,7 @@
 ---
 title: "Opg 7,8,9"
 output:
-  html_document: default
+  pdf_document: default
 date: '2023-01-12'
 ---
 
@@ -91,12 +91,10 @@ Vi betragter en additive noise model for log(wgt) på formen:
 \text{log}(\text{maxLA}) = \mu(\text{log(weight), race}) + \epsilon_i 
 \]
 Hvor race indgår som faktor-variabel og log(weight) indgår som numerisk variabel, dvs. middelværdifunktionen $\mu$ er en lineær funktion af den kontinuerte variabel log(wgt) og faktorvariablen race givet ved:
-
-*Hvorfor helvede kan dette ikke knittes til pdf???*
 \[
 \mu(\text{log(weight), race}) = \beta_0 + \beta_1\cdot \text{log(weight)} + \beta_2 \cdot 1(\text{race} =
-\text{Grand_Danois}) +\]
-\[\beta_3 \cdot 1(\text{race} = \text{Labrador}) + \beta_4\cdot 1(\text{race}=\text{Petit_Basset}) + beta_5\cdot 1(\text{race}=\text{Whippet})
+\text{Grand Danois}) +\]
+\[\beta_3 \cdot 1(\text{race} = \text{Labrador}) + \beta_4\cdot 1(\text{race}=\text{Petit Basset}) + beta_5\cdot 1(\text{race}=\text{Whippet})
 \]
 
 Dvs. dimensionen af det lineære underrum $L = L_{\text{log(weight)}} + L_\text{race}$ bliver (Jvf NRHAT lemma 3.2.14):
@@ -119,7 +117,7 @@ hunde$logwgt <- log(hunde$wgt)
 fit <- lm(logmaxLA ~ logwgt + race, data = hunde)
 ```
 
-For at undersøge antagelsen om at fejlene/residualerne er normalfordelt visualiserer vi residualerne i nedenstående fire grafer. Figur A residualerne plottet mod de fittede værdier i modellen, og generelt ser der ikke ud til at være nogen sammenhæng mellem residualer og fittede værdier. Figur B er et QQ-plot, som viser at fraktilerne i den observerede fordeling af residualer plottet mod fraktilerne fra en normalfordeling generelt ligger på en lige linje. Figur C viser den observerede fordeling af residualer i et histogram, og selvom der er lidt flere observationer i den mest negative ende af fordelingen, end der er i den positive ende, så ser normalfordelingsantagelsen alligevel ikke helt forfærdelig ud, da observationerne generelt er centreret omkring 0 og har en nogenlunde symmetrisk fordeling. Figur D viser residualerne plottet mod log(wgt) og farvet efter hunderace. Også her ser der ikke ud til at være den store forskel i fordeling af residualer på baggrund af de forklarende variable. 
+For at undersøge antagelsen om at fejlene/residualerne er normalfordelt visualiserer vi residualerne i nedenstående fire figurer. Figur A viser residualerne plottet mod de fittede værdier i modellen, og generelt ser der ikke ud til at være nogen sammenhæng mellem residualer og fittede værdier. Figur B er et QQ-plot, som viser at fraktilerne i den observerede fordeling af residualer plottet mod fraktilerne fra en normalfordeling generelt ligger på en lige linje. Figur C viser den observerede fordeling af residualer i et histogram, og selvom der er lidt flere observationer i den mest negative ende af fordelingen, end der er i den positive ende, så ser normalfordelingsantagelsen alligevel ikke helt forfærdelig ud, da observationerne generelt er centreret omkring 0 og har en nogenlunde symmetrisk fordeling. Figur D viser residualerne plottet mod log(wgt) og farvet efter hunderace. Også her ser der ikke ud til at være den store forskel i fordeling af residualer på baggrund af de forklarende variable. 
 ```{r opg8.3, echo=FALSE, include = TRUE}
 res <- get_regression_points(fit)
 p1 <- res %>% ggplot(aes(x = logmaxLA_hat, y = residual)) + geom_point() +
@@ -134,7 +132,7 @@ grid.arrange(p1, p2, p3, p4, nrow = 2)
 
 ```
 
-Konklusionen bliver, at vi vælger at tro på antagelsen om, at residualerne er normalfordelt, og dermed kan vi tillade os at konstruere konfidensintervaller for parameterestimaterne ud fra t-fordelingen. Svarende til vores valgte parametrisering bliver parameterestimaterne med tilhørende 95%-konfidensintervaller:
+Konklusionen bliver, at vi vælger at tro på antagelsen om, at residualerne er uafhængige og identisk fordelte med en normalfordeling, og dermed kan vi tillade os at konstruere konfidensintervaller for parameterestimaterne ud fra t-fordelingen. Svarende til vores valgte parametrisering bliver parameterestimaterne med tilhørende 95%-konfidensintervaller:
 ```{r opg8.2, echo=FALSE, include = TRUE, warning = FALSE}
 cbind(beta = paste0("beta_", 0:5), get_regression_table(fit)[,c(1,2,6,7)])
 ```
@@ -174,7 +172,7 @@ a$F[2]
 
 Som giver $P < 1,2 \cdot 10^{-6}$, og vi forkaster dermed nulhypotesen og konkluderer, at modellen som indeholder både hunderace og log(vægt) er signifikant bedre til at beskrive fordelingen af log(maxLA), hvilket er ensbetydende med at datasættet *ikke* understøtter en hypotese om, at der ikke er forskel på venstre forkammervolumen for de forskellige racer, hvis man justerer for hundens kropsvægt.
 
-Til sidst bemærker vi, at ovenstående F-test ligesom konfidensintervallerne i Opgave 8 kun kan bruges, hvis residualerne er normalfordelt. I Opgave 8 konkluderede vi, at dette var tilfældet, men vi observerede også en lille "hale" i den lave ende af fordelingen på histogrammet (Figur C). For at dobbelttjekke, at vi ikke forbryder os mod antagelsen om normalfordelte residualer tjekker vi lige om vi får det samme resultat hvis vi laver et *F*-test med bootstrapping (*efter samme fremgangsmåde som i opgave 6*).
+Til sidst bemærker vi, at ovenstående F-test ligesom konfidensintervallerne i Opgave 8 kun kan bruges, hvis residualerne er normalfordelt. I Opgave 8 konkluderede vi, at dette var tilfældet, men vi observerede også en lille "hale" i den lave ende af fordelingen på histogrammet (Figur C). For at dobbelttjekke, at vi ikke forbryder os mod antagelsen om normalfordelte residualer tjekker vi lige om vi får det samme resultat hvis vi laver et *F*-test med bootstrapping efter samme fremgangsmåde som i opgave 6.
 
 Eftersom $q = \text{dim}(L_{\text{race}}) = 2, p = \text{dim}(L_{\text{race}} + L_{\text{log}(\text{wgt})}) = 6$, vil *F*-teststørrelsen være *F*-fordelt med $(p-q, n-p) = (6-2, 97-6) = (4,91)$ frihedsgrader.
 
