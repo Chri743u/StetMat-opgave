@@ -1,0 +1,147 @@
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library("gridExtra")
+library("tidyverse")
+library("infer")
+library("dplyr")
+library("readr")
+library("nycflights13")
+library("ggplot2")
+library("purrr")
+library("tibble")
+library("stringr")
+library("forcats")
+library("moderndive")
+library("skimr")
+library("gapminder")
+library("skimr")
+```
+
+## Opg 4:
+I vores tabel grupperer vi datasættet i racer og inkluderer antallet af observationer, samt min, max og de mest væsentlige fraktiler, for de resterende variable. Det giver os følgende tabel:
+```{r}
+hunde <- read.table("hunde.txt", sep = "\t", header = T)
+hunde %>% group_by(race) %>% 
+  summarise(n = n(),
+            min_wgt = min(wgt),
+            q_25_wgt = quantile(wgt, 0.25),
+            q_50_wgt = quantile(wgt, 0.50),
+            q_75_wgt = quantile(wgt, 0.75),
+            max_wgt = max(wgt),
+            min_maxLA = min(maxLA),
+            q_25_LA = quantile(maxLA, 0.25),
+            q_50_LA = quantile(maxLA, 0.50),
+            q_75_LA = quantile(maxLA, 0.75),
+            max_maxLA = max(maxLA)) %>%
+  as.data.frame()
+```
+Det giver et rimeligt overblik over størrelsen af dataen, samt hvilken størrelsesorden alle variablerne for hver race ligger i. Vi undlader at inkludere mean og sd, da de næste par opgaver handler om sammenligning af størrelser som dem. 
+
+Følgende figur viser fordelingen af maxLA udfra de forskellige racer i form af boxplots, så man kan aflæse de relevante fraktiler. Vi har desuden også geom_jitter plottet dataen, så man kan se fordelingen af punkterne i boxplottet. Vi benytter geom_jitter, da geom_point havde lagt punkterne i samme vertikale linje og havde gemt punkter bag andre punkter med samme y-værdi, hvor geom_jitter sætter punkter i et småt område rundt om der hvor punktet faktisk ligger, det gør det mere overskueligt at se data der plotter mange punkter oveni hinanden.
+
+```{r one, echo=FALSE}
+hunde %>% ggplot(aes(x = race, y = maxLA)) + 
+  geom_boxplot(outlier.color =  "white") +
+  geom_jitter( width = 0.25) +
+  theme_classic()
+```
+
+Vores anden figur, viser fordelingen af maxLA givet wgt, altså fortæller figuren noget om en hunds maxLA givet dens vægt og forklarer relationen mellem de to variabler. Vi vurderer at der ikke er behov for geom_jitter, da dataen ser pæn ud og der ikke er overplottet, vi benytter da geom_point.
+
+```{r}
+hunde %>% ggplot(aes(x = wgt, y = maxLA, color = race)) +
+  geom_point() +
+  theme_classic()
+```
+
+Vi ser en ret pæn sammenhæng mellem maxLA, samt har vi farvet hver race forskellige farver. Det gør også at man kan gennemskue fordelingen af vægt på baggrund af race, man ser for eksempelat Grand Danoir er den største race og at Border Terrier er den mindste race.
+
+## Opg 5
+
+Vi vælger i denne opgave Labrador racen og laver bootstrapper dataen med 1000 reps af 17 udtrækninger, da det er størrelsen af datasættet og med replacement da vi ellers ville få samme mean hver rep. Vi laver 1000 reps da det er antallet der oftest er benyttede til forlæsninger og øvelser. 
+
+Kode der udregner konfidens intervallet:
+```{r, echo=TRUE}
+lab <- hunde %>%
+  filter(race == "Labrador") 
+lab_maxLA <- lab$maxLA
+
+boot <- lab_maxLA %>%
+  as_tibble() %>%
+  rep_sample_n(size = 17, reps =1000, replace = T) %>%
+  group_by(replicate) %>%
+  summarize(mean = mean(value))
+q <- c(quantile(boot$mean, 0.025), quantile(boot$mean, 0.975))
+names(q) <- NULL
+con_int <- c(2*mean(lab_maxLA)-q[2], 2*mean(lab_maxLA)-q[1])
+```
+
+
+Plot af fordeling af bootstrappede means ($x^*_1,x^*_2,...,x^*_{1000}$)
+```{r}
+ggplot(data = boot) +
+  geom_histogram(aes(x=mean, y=..density..), binwidth=0.2, color = "steelblue", fill = "steelblue") +
+  geom_vline(xintercept = mean(boot$mean), color = "red")
+```
+
+
+Vi benytter basic bootstrap fra def 2.1.22 (NRHAT), da det tillader os at finde et konfidens interval uden at lave stærke og urealistiske antagelser om dataen. Grunden til at vi benytter The basic bootstrap interval (38), er at vi gerne vil sige noget om fordelingen af P og ikke $\hat{P}$, som percentile interval siger noget om. Vi vil tværtimod godt sige noget om $\eta$ med 0.95 sandsynlighed, dette gør præcis basic bootstrap, da vi på baggrund af fundemental bootstrapping har at $T^*-\hat{\eta}$ approksimerer $T-\eta$ hvilket ifølge side 63 (NRHAT) medfører at basic bootstrap intervallet dækker $\eta$ med 0.95 sandsynlighed, som er det søgte.
+Samt som vi ser på figuren over fordelingen af de bootstrappede means er det rimeligt at antage at $T^*$ er symmetrisk fordelt om $\hat{\eta}$, dette gør at percentile og basic intervallerne er rimelig ens men vi insisterer på basic af de overstående årsager. Vi benytter os ikke af SE intervallet i (2.1.22), da den bygger på at fordelingen af $T-\eta$ er normalfordelt, hvilket vi, selvom det kan være tilfældet, ikke vil komme ind på.
+Dette giver os intervallet:
+```{r}
+con_int
+```
+Altså er $[17.41872, \, 20.44240]$ vores 95% basic bootstrap konfidens interval af Labrador racen.
+
+## Opg 6.
+
+``` {r}
+lm_0 <- lm(maxLA ~ 1, data = hunde)
+X0 <- model.matrix(lm_0)
+n <- nrow(X0) 
+
+set.seed(2022)
+B <- 10000
+my_boot <- tibble(residuals = residuals(lm_0)) %>%
+  rep_sample_n(size = n, replace = TRUE, reps = B) %>%
+  mutate(y = fitted(lm_0) + residuals)
+
+lm_fit <- lm(maxLA ~ race, data = hunde)
+X <- model.matrix(lm_fit)
+
+F_test <- function(lm_null, lm_full) {
+  p <- lm_full$rank
+  q <- lm_null$rank
+  
+  lm_full$df.residual * sum((lm_full$fitted.values -
+                               lm_null$fitted.values)^2)/(sum(lm_full$residuals^2) *
+                                                            (p - q))
+}
+
+my_res <- my_boot %>%
+  summarize(F = F_test(lm.fit(X0, y), lm.fit(X, y)))
+
+F_obs <- F_test(lm.fit(X0, hunde$maxLA), lm.fit(X, hunde$maxLA))
+p_value <- sum(my_res$F > F_obs) / B
+p_value
+
+ggplot(data = my_res) + 
+  geom_histogram(aes(x = F, y = ..density..),
+                 color = "white", fill = "steelblue", bins = 100) + 
+  labs(x = "F") +
+  theme_bw() +
+  geom_vline(xintercept = F_obs, color = "red")
+#+ 
+  stat_function(fun = df, args = list(df1 = 25 - 16, df2 = 50 - 25), 
+                geom = "area", fill = "pink", color = "blue", alpha = 0.25)
+
+```
+
+                
+                
+                
+            
+
+                
